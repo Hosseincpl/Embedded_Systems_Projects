@@ -29,7 +29,7 @@ r_next <= r_reg +1;
 
 -- output logic
 output_vector <= std_logic_vector(r_reg);
--- r_out <=
--- l_out <=
+r_out <= output_vector(3 downto 0);
+l_out <= output_vector(7 downto 4);
 max_tick <= '1' when r_reg = 99 else '0';
 end Behavioral;
