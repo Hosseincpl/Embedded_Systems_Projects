@@ -35,7 +35,6 @@ architecture RTL of UART_TX is
   type t_SM_Main is (s_Idle, s_TX_Start_Bit, s_TX_Data_Bits,
                      s_TX_Stop_Bit, s_Cleanup);
   signal r_SM_Main : t_SM_Main := s_Idle;
- 
   signal r_Clk_Count : integer range 0 to g_CLKS_PER_BIT-1 := 0;
   signal r_Bit_Index : integer range 0 to 7 := 0;  -- 8 Bits Total
   signal r_TX_Data   : std_logic_vector(7 downto 0) := (others => '0');
@@ -43,7 +42,7 @@ architecture RTL of UART_TX is
    
 begin
  
-   
+  
   p_UART_TX : process (i_Clk)
   begin
     if rising_edge(i_Clk) then
@@ -72,7 +71,8 @@ begin
             r_SM_Main   <= s_TX_Start_Bit;
           else
             r_Clk_Count <= 0;
-            r_SM_Main   <= s_TX_Data_Bits; end if; -- Wait g_CLKS_PER_BIT-1 clock cycles for data bits to finish when s_TX_Data_Bits =>
+            r_SM_Main   <= s_TX_Data_Bits; 
+        end if; -- Wait g_CLKS_PER_BIT-1 clock cycles for data bits to finish when s_TX_Data_Bits =>
           o_TX_Serial <= r_TX_Data(r_Bit_Index);
            
           if r_Clk_Count < g_CLKS_PER_BIT-1 then
@@ -99,10 +99,12 @@ begin
           else
             r_TX_Done   <= '1';
             r_Clk_Count <= 0;
-            r_SM_Main   <= s_Cleanup; end if; -- Stay here 1 clock when s_Cleanup =>
+            r_SM_Main   <= s_Cleanup; 
+        end if; -- Stay here 1 clock when s_Cleanup =>
           o_TX_Active <= '0';
           r_TX_Done   <= '1';
-          r_SM_Main   <= s_Idle; when others =>
+          r_SM_Main   <= s_Idle; 
+        when others =>
           r_SM_Main <= s_Idle;
  
       end case;
