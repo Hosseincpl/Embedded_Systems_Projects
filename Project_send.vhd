@@ -42,13 +42,14 @@ architecture RTL of UART_TX is
    
 begin 
   
-  p_UART_TX : process (i_Clk)
-  begin
+  p_UART_TX : 
+  process (i_Clk)
+   begin
     if rising_edge(i_Clk) then
          
       case r_SM_Main is
  
-        
+
         when s_Idle =>
           o_TX_Active <= '0';
           o_TX_Serial <= '1';         -- Drive Line High for Idle
@@ -82,8 +83,10 @@ begin
             r_Clk_Count <= 0;
              
             -- Check if we have sent out all bits
-            if r_Bit_Index < 7 then
+            if r_Bit_Index <= 7 then
+            if r_Bit_Index /= 7 then
               r_Bit_Index <= r_Bit_Index + 1;
+            end if;
               r_SM_Main   <= s_TX_Data_Bits;
             else
               r_Bit_Index <= 0;
