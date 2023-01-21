@@ -12,20 +12,24 @@ entity UP_COUNTER is
 end UP_COUNTER;
 --------------------------------------------------------------------------------------
 architecture Behavioral of UP_COUNTER is
-	signal counter_up: std_logic_vector(7 downto 0); -- output 8-bit counter
+	signal output_vector	: std_logic_vector(7 downto 0); -- output 8-bit counter;
+	signal r_reg		: unsigned (7 downto 0);
+	signal r_next		: unsigned (7 downto 0);
 begin
 -- up counter
 	process(clk, reset)
 	begin
 		if(reset = '1') then
-    			if(reset='1') then
-         			counter_up <= x"0";
-    			else if(clk' event and clk='1')
-        			counter_up <= counter_up + x"1";
-    			end if;
+			r_reg <= (others => '0');
+    		else if(clk' event and clk='1')
+        		r_reg <= r_next;
  		end if;
 	end process;
-counter <= counter_up;
+r_next <= r_reg +1;
 
+-- output logic
+output_vector <= std_logic_vector(r_reg);
+-- r_out <=
+-- l_out <=
+max_tick <= '1' when r_reg = 99 else '0';
 end Behavioral;
---------------------------------------------------------------------------------------
