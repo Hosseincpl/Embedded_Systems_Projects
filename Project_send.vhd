@@ -10,7 +10,7 @@
 -- g_CLKS_PER_BIT = (Frequency of i_Clk)/(Frequency of UART)
 -- Example: 10 MHz Clock, 115200 baud UART
 -- (10000000)/(115200) = 87
---
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -40,8 +40,7 @@ architecture RTL of UART_TX is
   signal r_TX_Data   : std_logic_vector(7 downto 0) := (others => '0');
   signal r_TX_Done   : std_logic := '0';
    
-begin
- 
+begin 
   
   p_UART_TX : process (i_Clk)
   begin
@@ -49,6 +48,7 @@ begin
          
       case r_SM_Main is
  
+        
         when s_Idle =>
           o_TX_Active <= '0';
           o_TX_Serial <= '1';         -- Drive Line High for Idle
@@ -91,7 +91,7 @@ begin
               end if; 
             end if; -- Send out Stop bit. Stop bit = 1 when s_TX_Stop_Bit =>
           o_TX_Serial <= '1';
- 
+
           -- Wait g_CLKS_PER_BIT-1 clock cycles for Stop bit to finish
           if r_Clk_Count < g_CLKS_PER_BIT-1 then
             r_Clk_Count <= r_Clk_Count + 1;
