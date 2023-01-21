@@ -61,7 +61,8 @@ begin
             r_TX_Data <= i_TX_Byte;
             r_SM_Main <= s_TX_Start_Bit;
           else
-            r_SM_Main <= s_Idle; end if; -- Send out Start Bit. Start bit = 0 when s_TX_Start_Bit =>
+            r_SM_Main <= s_Idle; 
+        end if; -- Send out Start Bit. Start bit = 0 when s_TX_Start_Bit =>
           o_TX_Active <= '1';
           o_TX_Serial <= '0';
  
@@ -86,7 +87,9 @@ begin
               r_SM_Main   <= s_TX_Data_Bits;
             else
               r_Bit_Index <= 0;
-              r_SM_Main   <= s_TX_Stop_Bit; end if; end if; -- Send out Stop bit. Stop bit = 1 when s_TX_Stop_Bit =>
+              r_SM_Main   <= s_TX_Stop_Bit; 
+              end if; 
+            end if; -- Send out Stop bit. Stop bit = 1 when s_TX_Stop_Bit =>
           o_TX_Serial <= '1';
  
           -- Wait g_CLKS_PER_BIT-1 clock cycles for Stop bit to finish
