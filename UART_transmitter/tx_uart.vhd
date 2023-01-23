@@ -73,10 +73,8 @@ architecture Behavioral of UART_TX is
                     clk_counter <= 0;
                     
                     -- Check if we have sent out all bits
-                    if bit_index <= 7 then
-                        if bit_index /= 7 then
-                            bit_index <= bit_index + 1;
-                        end if;
+                    if bit_index < 7 then
+                        bit_index <= bit_index + 1;
                         s_current   <= s_data_bits;
                     else
                         bit_index <= 0;
