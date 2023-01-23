@@ -4,15 +4,15 @@ use ieee.numeric_std.all;
  
 entity UART_TX is
   generic (
-    gen_clks_per_bit : integer := 7500  -- for STM32F10ZET6
+    gen_clks_per_bit : integer := 7500 - 1 -- for STM32F10ZET6
     );
   port (
     in_clk          : in  std_logic;
     in_data_valid   : in  std_logic; -- Data valid pulse
-    in_serial_byte  : in  std_logic_vector(7 downto 0);
-    out_active      : out std_logic;
-    out_serial      : out std_logic;
-    out_finish      : out std_logic
+    in_serial_byte  : in  std_logic_vector(7 downto 0); -- Our Data
+    out_active      : out std_logic; -- For simulation
+    out_serial      : out std_logic; -- Trasfering data byte by byte
+    out_finish      : out std_logic -- End of transfering
     );
 end UART_TX;
 
@@ -35,6 +35,7 @@ architecture Behavioral of UART_TX is
             case s_current is
  
             when s_idle =>
+                in_data_valid <= '0';
                 out_active  <= '0';
                 out_serial  <= '1';         -- Drive Line High for Idle
                 finish      <= '0';
@@ -54,7 +55,7 @@ architecture Behavioral of UART_TX is
                 out_serial <= '0';
  
                 -- Wait gen_clks_per_bit clock cycles for start bit to finish
-                if clk_counter < gen_clks_per_bit then
+                if clk_counter <= gen_clks_per_bit then
                     clk_counter <= clk_counter + 1;
                     s_current   <= s_start_bit;
                 else
@@ -65,7 +66,7 @@ architecture Behavioral of UART_TX is
             when s_data_bits =>
                 out_serial <= data(bit_index);
                 
-                if clk_counter < gen_clks_per_bit then
+                if clk_counter <= gen_clks_per_bit then
                     clk_counter <= clk_counter + 1;
                     s_current   <= s_data_bits;
                 else
@@ -88,7 +89,7 @@ architecture Behavioral of UART_TX is
                 out_serial <= '1';
 
                 -- Wait gen_clks_per_bit-1 clock cycles for Stop bit to finish
-                if clk_counter < gen_clks_per_bit-1 then
+                if clk_counter <= gen_clks_per_bit then
                     clk_counter <= clk_counter + 1;
                     s_current   <= s_stop_bit;
                 else
