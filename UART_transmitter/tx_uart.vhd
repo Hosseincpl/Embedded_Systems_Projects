@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
  
 entity UART_TX is
   generic (
-    g_CLKS_PER_BIT : integer := 87     -- Needs to be set correctly
+    gen_clks_per_bit : integer := 87     -- change this int   
     );
   port (
     in_clk          : in  std_logic;
@@ -16,90 +16,92 @@ entity UART_TX is
     );
 end UART_TX;
 
-architecture RTL of UART_TX is
+architecture Behavioral of UART_TX is
  
     type type_SM is (s_idle, s_start_bit, s_data_bits, s_stop_bit, s_cleanup);
 
-    signal r_SM_Main   : type_SM := s_idle;
-    signal clk_counter : integer range 0 to g_CLKS_PER_BIT-1 := 0;
-    signal r_Bit_Index : integer range 0 to 7 := 0;  -- 8 Bits Total
-    signal r_TX_Data   : std_logic_vector(7 downto 0) := (others => '0');
-    signal r_TX_Done   : std_logic := '0';
+    signal s_current    : type_SM := s_idle;
+    signal clk_counter  : integer range 0 to gen_clks_per_bit := 0;
+    signal bit_index    : integer range 0 to 7 := 0;  -- 8 Bits Total
+    signal data         : std_logic_vector(7 downto 0) := (others => '0');
+    signal finish       : std_logic := '0';
    
-begin 
+ begin 
   
     process (in_clk)
     begin
         if rising_edge(in_clk) then
          
-            case r_SM_Main is
+            case s_current is
  
             when s_idle =>
-                out_active <= '0';
-                out_serial <= '1';         -- Drive Line High for Idle
-                r_TX_Done   <= '0';
+                out_active  <= '0';
+                out_serial  <= '1';         -- Drive Line High for Idle
+                finish      <= '0';
                 clk_counter <= 0;
-                r_Bit_Index <= 0;
+                bit_index   <= 0;
                 
                 -- Send out Start Bit. Start bit = 0 when s_start_bit =>
                 if in_data_valid = '1' then
-                    r_TX_Data <= in_serial_byte;
-                    r_SM_Main <= s_start_bit;
+                    data <= in_serial_byte;
+                    s_current <= s_start_bit;
                 else
-                    r_SM_Main <= s_idle; 
+                    s_current <= s_idle; 
                 end if; 
                 
-                out_active <= '1'; -- high for entire transmittion proccess
+                out_active <= '1'; -- set high for entire transmittion proccess
                 out_serial <= '0';
  
-                -- Wait g_CLKS_PER_BIT clock cycles for start bit to finish
-                if clk_counter < g_CLKS_PER_BIT then
+                -- Wait gen_clks_per_bit clock cycles for start bit to finish
+                if clk_counter < gen_clks_per_bit then
                     clk_counter <= clk_counter + 1;
-                    r_SM_Main   <= s_start_bit;
+                    s_current   <= s_start_bit;
                 else
                     clk_counter <= 0;
-                    r_SM_Main   <= s_data_bits; 
-                end if; -- Wait g_CLKS_PER_BIT-1 clock cycles for data bits to finish when s_data_bits =>
-                out_serial <= r_TX_Data(r_Bit_Index);
+                    s_current   <= s_data_bits; 
+                end if; 
                 
-                if clk_counter < g_CLKS_PER_BIT-1 then
+                out_serial <= data(bit_index);
+                
+                if clk_counter < gen_clks_per_bit then
                     clk_counter <= clk_counter + 1;
-                    r_SM_Main   <= s_data_bits;
+                    s_current   <= s_data_bits;
                 else
                     clk_counter <= 0;
                     
                     -- Check if we have sent out all bits
-                    if r_Bit_Index <= 7 then
-                    if r_Bit_Index /= 7 then
-                    r_Bit_Index <= r_Bit_Index + 1;
-                    end if;
-                    r_SM_Main   <= s_data_bits;
+                    if bit_index <= 7 then
+                        if bit_index /= 7 then
+                            bit_index <= bit_index + 1;
+                        end if;
+                        s_current   <= s_data_bits;
                     else
-                    r_Bit_Index <= 0;
-                    r_SM_Main   <= s_stop_bit; 
+                        bit_index <= 0;
+                        s_current   <= s_stop_bit; 
                     end if; 
-                    end if; -- Send out Stop bit. Stop bit = 1 when s_stop_bit =>
+                end if; 
+                -- Send out Stop bit. Stop bit = 1 when s_stop_bit =>
                 out_serial <= '1';
 
-                -- Wait g_CLKS_PER_BIT-1 clock cycles for Stop bit to finish
-                if clk_counter < g_CLKS_PER_BIT-1 then
+                -- Wait gen_clks_per_bit-1 clock cycles for Stop bit to finish
+                if clk_counter < gen_clks_per_bit-1 then
                     clk_counter <= clk_counter + 1;
-                    r_SM_Main   <= s_stop_bit;
+                    s_current   <= s_stop_bit;
                 else
-                    r_TX_Done   <= '1';
+                    finish   <= '1';
                     clk_counter <= 0;
-                    r_SM_Main   <= s_cleanup; 
+                    s_current   <= s_cleanup; 
                 end if; -- Stay here 1 clock when s_cleanup =>
                 out_active <= '0';
-                r_TX_Done   <= '1';
-                r_SM_Main   <= s_idle; 
+                finish   <= '1';
+                s_current   <= s_idle; 
                 when others =>
-                r_SM_Main <= s_idle;
+                s_current <= s_idle;
  
             end case;
         end if;
     end process;
  
-    out_finish <= r_TX_Done;
+    out_finish <= finish;
    
-end RTL;
+end Behavioral;
