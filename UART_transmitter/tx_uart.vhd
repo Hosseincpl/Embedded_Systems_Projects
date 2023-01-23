@@ -35,7 +35,6 @@ architecture Behavioral of UART_TX is
             case s_current is
  
             when s_idle =>
-                in_data_valid <= '0';
                 out_active  <= '0';
                 out_serial  <= '1';         -- Drive Line High for Idle
                 finish      <= '0';
