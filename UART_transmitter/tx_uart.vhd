@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
  
 entity UART_TX is
   generic (
-    gen_clks_per_bit : integer := 87     -- change this int   
+    gen_clks_per_bit : integer := 7500  -- for STM32F10ZET6
     );
   port (
     in_clk          : in  std_logic;
