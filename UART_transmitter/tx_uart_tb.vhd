@@ -9,15 +9,15 @@ architecture behave of uart_tb is
  
   component uart_tx is
     generic (
-      g_CLKS_PER_BIT : integer := 115   -- Needs to be set correctly
+      g_CLKS_PER_BIT : integer := 7499   -- Needs to be set correctly
       );
     port (
-      i_clk       : in  std_logic;
-      i_tx_dv     : in  std_logic;
-      i_tx_byte   : in  std_logic_vector(7 downto 0);
-      o_tx_active : out std_logic;
-      o_tx_serial : out std_logic;
-      o_tx_done   : out std_logic
+      in_clk            : in  std_logic;
+      in_data_valid     : in  std_logic;
+      in_serial_byte    : in  std_logic_vector(7 downto 0);
+      out_active        : out std_logic;
+      out_serial        : out std_logic;
+      out_finish        : out std_logic
       );
   end component uart_tx;
  
@@ -26,10 +26,10 @@ architecture behave of uart_tb is
       g_CLKS_PER_BIT : integer := 115   -- Needs to be set correctly
       );
     port (
-      i_clk       : in  std_logic;
-      i_rx_serial : in  std_logic;
-      o_rx_dv     : out std_logic;
-      o_rx_byte   : out std_logic_vector(7 downto 0)
+      in_clk        : in  std_logic;
+      i_rx_serial   : in  std_logic;
+      o_rx_dv       : out std_logic;
+      o_rx_byte     : out std_logic_vector(7 downto 0)
       );
   end component uart_rx;
  
@@ -68,15 +68,17 @@ architecture behave of uart_tb is
     end loop;  -- ii
  
     -- Send Stop Bit
-    o_serial <= '1'; wait for c_BIT_PERIOD; end UART_WRITE_BYTE; begin -- Instantiate UART transmitter UART_TX_INST : uart_tx generic map ( g_CLKS_PER_BIT => c_CLKS_PER_BIT
-      )
+    o_serial <= '1'; wait for c_BIT_PERIOD; end UART_WRITE_BYTE; 
+    begin
+    -- Instantiate UART transmitter 
+    UART_TX_INST : uart_tx generic map ( g_CLKS_PER_BIT => c_CLKS_PER_BIT) 
     port map (
-      i_clk       => r_CLOCK,
-      i_tx_dv     => r_TX_DV,
-      i_tx_byte   => r_TX_BYTE,
-      o_tx_active => open,
-      o_tx_serial => w_TX_SERIAL,
-      o_tx_done   => w_TX_DONE
+      in_clk       => r_CLOCK,
+      in_data_valid     => r_TX_DV,
+      in_serial_byte   => r_TX_BYTE,
+      out_active => open,
+      out_serial => w_TX_SERIAL,
+      out_finish   => w_TX_DONE
       );
  
   -- Instantiate UART Receiver
@@ -85,7 +87,7 @@ architecture behave of uart_tb is
       g_CLKS_PER_BIT => c_CLKS_PER_BIT
       )
     port map (
-      i_clk       => r_CLOCK,
+      in_clk       => r_CLOCK,
       i_rx_serial => r_RX_SERIAL,
       o_rx_dv     => w_RX_DV,
       o_rx_byte   => w_RX_BYTE
