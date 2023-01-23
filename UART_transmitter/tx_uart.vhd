@@ -41,14 +41,15 @@ architecture Behavioral of UART_TX is
                 clk_counter <= 0;
                 bit_index   <= 0;
                 
-                -- Send out Start Bit. Start bit = 0 when s_start_bit =>
                 if in_data_valid = '1' then
                     data <= in_serial_byte;
                     s_current <= s_start_bit;
                 else
                     s_current <= s_idle; 
                 end if; 
-                
+            
+            -- Send out Start Bit. Start bit = 0 
+            when s_start_bit =>
                 out_active <= '1'; -- set high for entire transmittion proccess
                 out_serial <= '0';
  
@@ -60,7 +61,8 @@ architecture Behavioral of UART_TX is
                     clk_counter <= 0;
                     s_current   <= s_data_bits; 
                 end if; 
-                
+            
+            when s_data_bits =>
                 out_serial <= data(bit_index);
                 
                 if clk_counter < gen_clks_per_bit then
@@ -80,7 +82,9 @@ architecture Behavioral of UART_TX is
                         s_current   <= s_stop_bit; 
                     end if; 
                 end if; 
-                -- Send out Stop bit. Stop bit = 1 when s_stop_bit =>
+            
+            -- Send out Stop bit. Stop bit = 1 
+            when s_stop_bit =>
                 out_serial <= '1';
 
                 -- Wait gen_clks_per_bit-1 clock cycles for Stop bit to finish
@@ -91,11 +95,15 @@ architecture Behavioral of UART_TX is
                     finish   <= '1';
                     clk_counter <= 0;
                     s_current   <= s_cleanup; 
-                end if; -- Stay here 1 clock when s_cleanup =>
+                end if; 
+            
+            -- Stay here 1 clock 
+            when s_cleanup =>
                 out_active <= '0';
                 finish   <= '1';
                 s_current   <= s_idle; 
-                when others =>
+            
+            when others =>
                 s_current <= s_idle;
  
             end case;
